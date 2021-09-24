@@ -1,4 +1,4 @@
-/* Copyright 2018 @fixed
+/* Copyright 2021 Andrew Braini
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -14,4 +14,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "x2.h"
+#include "battleship_gamepad.h"
+#include "joystick.h"
+#include "analog.h"
+
+/* joystick config */
+joystick_config_t joystick_axes[JOYSTICK_AXES_COUNT] = {
+    [0] = JOYSTICK_AXIS_IN(F5, 1023, 512, 0),
+    [1] = JOYSTICK_AXIS_IN(F4, 0, 512, 1023)
+};
+
+/* joystick button code (thumbstick pressed) */
+void keyboard_pre_init_kb(void) {
+	setPinInputHigh(F6);
+}
