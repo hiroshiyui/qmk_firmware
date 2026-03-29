@@ -88,6 +88,40 @@ Standard ANSI layout. Both Space bars send `KC_SPC`.
 | Fn + `Esc`    | `QK_BOOT` (left half bootloader)  |
 | Fn + `Pause`  | `QK_BOOT` (right half bootloader) |
 
+## Preliminary Verifications
+
+Before soldering switches, flash both Picos and verify circuit logic with jumper wires.
+
+### 1. Split link
+
+- Wire the interconnect cable **TX ↔ RX, RX ↔ TX, GND ↔ GND** (no VCC).
+- Plug only the left Pico into the computer — confirm it enumerates as a HID device (master).
+- Plug only the right Pico — confirm it also enumerates as master when alone.
+- Connect both halves via the cable and plug in either side — the plugged-in half should become master and both halves should be recognized.
+
+### 2. Master election (`SPLIT_USB_DETECT`)
+
+- With both halves connected by the cable, plug USB into the **left** Pico → left is master.
+- Swap to the **right** Pico → right becomes master.
+- Verify that keystrokes from the slave half are forwarded correctly in both configurations.
+
+### 3. Matrix — jumper testing
+
+Short each row/col pin pair with a jumper wire to simulate keypresses and confirm positions match the layout (use `qmk console` or a keytest tool):
+
+- **Left** (GP4–GP9 × GP10–GP16): 7 col pins; simulate all 36 key positions.
+- **Right** (GP4–GP9 × GP10–GP19): 10 col pins; simulate all 51 key positions.
+- Confirm that GP17–GP19 produce **no output** on the left Pico — those pins are intentionally unwired on the left half.
+
+### 4. Bootloader shortcut
+
+Before casing the board, confirm the in-firmware bootloader entry works so the BOOTSEL button remains accessible without disassembly:
+
+- Hold `Fn + Esc` on the left half → left Pico should reboot into UF2 bootloader.
+- Hold `Fn + Pause` on the right half → right Pico should reboot into UF2 bootloader.
+
+---
+
 ## Building & Flashing
 
 ```sh
