@@ -1,0 +1,115 @@
+# h_ergo — Hiroshi's Ergonomic Keyboard
+
+Split TKL mechanical keyboard — hand-wired, Raspberry Pi Pico per side.
+
+- **87 keys total**: 36 left + 51 right
+- **Switch spacing**: 19.05 mm (ANSI 1U)
+- **Connection**: USB-C interconnect cable between halves (UART TX/RX/GND; no VCC)
+- **Host**: USB Micro (left back wall) or USB-C (right back wall) — either half can be master
+
+The CAD source for the case and plate is `samples/split_tkl_keyboard.rb` in the [rrcad](https://github.com/yhh/rrcad) repository.
+
+## Layout
+
+```
+┌──────┬────┬────┬────┬────┬────┬────╥────┬────┬────┬────┬────┬────┬──────┬──────┬──────┬──────┐
+│ Esc  │ F1 │ F2 │ F3 │ F4 │ F5 │ F6 ║ F7 │ F8 │ F9 │F10 │F11 │F12 │PrtSc │ScrLk │Pause │ Ins  │
+├──────┼────┼────┼────┼────┼────┼────╫────┼────┼────┼────┼────┼────┼─────────────┼──────┤
+│  `   │  1 │  2 │  3 │  4 │  5 │  6 ║  7 │  8 │  9 │  0 │  - │  = │  Backspace  │ Home │
+├───────┬───┴┬───┴┬───┴┬───┴┬───┴╥───┴┬───┴┬───┴┬───┴┬───┴┬───┴┬───┴┬────────────┼──────┤
+│  Tab  │  Q │  W │  E │  R │  T ║  Y │  U │  I │  O │  P │  [ │  ] │     \      │ PgUp │
+├────────┬───┴┬───┴┬───┴┬───┴┬───╫───┴┬───┴┬───┴┬───┴┬───┴┬───┴┬───┴────────────┼──────┤
+│  Caps  │  A │  S │  D │  F │  G ║  H │  J │  K │  L │  ; │  ' │    Enter       │ Del  │
+├─────────┬──┴┬───┴┬───┴┬───┴┬───╫───┬┴───┬┴───┬┴───┬┴───┬┴──────────┬────┬──────┤
+│ LShift  │ Z │  X │  C │  V │  B ║  N │  M │  , │  . │  / │  RShift  │ ↑  │ End  │
+├──────┬───┴┬──────┴┬───────────╫──┬──────┬──────────┬──────┐    ├────┼────┼──────┤
+│LCtrl │Win │ LAlt  │   Space   ║Sp│ RAlt │    Fn    │RCtrl │    │ ←  │ ↓  │  →   │ PgDn │
+└──────┴────┴───────┴───────────╨──┴──────┴──────────┴──────┘    └────┴────┴──────┴──────┘
+```
+
+## Matrix
+
+The two halves have **asymmetric column counts** — matched exactly to the hand-wired trace layout:
+
+| Half  | Rows | Cols | Matrix positions | Keys used |
+|-------|------|------|-----------------|-----------|
+| Left  | 6    | 7    | 42              | 36        |
+| Right | 6    | 10   | 60              | 51        |
+
+`MATRIX_ROWS = 12` (rows 0–5 = left, rows 6–11 = right), `MATRIX_COLS = 10`.
+
+### Per-row key counts
+
+| Row | Left keys | Right keys |
+|-----|-----------|------------|
+| R0 (Fn)     | 7  | 10 |
+| R1 (Number) | 7  | 8  |
+| R2 (QWERTY) | 6  | 9  |
+| R3 (Home)   | 6  | 8  |
+| R4 (Shift)  | 6  | 8  |
+| R5 (Bottom) | 4  | 8  |
+
+## GPIO Pin Assignment (both Picos use the same physical pins)
+
+| Function         | Pins            | Notes                                   |
+|------------------|-----------------|-----------------------------------------|
+| Row scan         | GP4 – GP9       | 6 pins, shared both sides               |
+| Col scan (left)  | GP10 – GP16     | 7 pins; defined via `MATRIX_COL_PINS`   |
+| Col scan (right) | GP10 – GP19     | 10 pins; defined via `MATRIX_COL_PINS_RIGHT` |
+| UART TX          | GP0             | UART0; connects to opposite half RX     |
+| UART RX          | GP1             | UART0; connects to opposite half TX     |
+
+The left Pico drives 13 matrix GPIO pins (GP4–GP16); the right drives 16 (GP4–GP19).
+GP0/GP1 are reserved on both sides for the split link; GP2/GP3 are free for future use.
+
+## Split Link
+
+Full-duplex UART at 460800 baud.  Cable wiring: `TX ↔ RX`, `RX ↔ TX`, `GND ↔ GND`.  No VCC on the cable — each Pico is powered independently via its own USB port.
+
+Master election uses `SPLIT_USB_DETECT`: whichever half has an active USB host connection becomes master. Either half can be plugged into the computer.
+
+## Layers
+
+### Layer 0 — Base (QWERTY)
+
+Standard ANSI layout. Both Space bars send `KC_SPC`.
+
+### Layer 1 — Fn (hold right `Fn` key)
+
+| Key combo     | Action              |
+|---------------|---------------------|
+| Fn + `-`      | Volume down         |
+| Fn + `=`      | Volume up           |
+| Fn + `PgUp`   | Mute                |
+| Fn + `↑`      | Play / Pause        |
+| Fn + `←`      | Previous track      |
+| Fn + `↓`      | Mute                |
+| Fn + `→`      | Next track          |
+| Fn + `Esc`    | `QK_BOOT` (left half bootloader)  |
+| Fn + `Pause`  | `QK_BOOT` (right half bootloader) |
+
+## Building & Flashing
+
+```sh
+# Build
+qmk compile -kb h_ergo -km default
+
+# Flash left half (hold BOOTSEL on left Pico before plugging in USB)
+qmk flash -kb h_ergo -km default
+
+# Flash right half (hold BOOTSEL on right Pico)
+qmk flash -kb h_ergo -km default
+```
+
+Alternatively, hold `Fn + Esc` (left) or `Fn + Pause` (right) to reboot into the bootloader without touching the board.
+
+## File Structure
+
+```
+keyboards/h_ergo/
+├── keyboard.json          — processor, USB IDs, matrix pins, layout
+├── config.h               — asymmetric col pins, UART config, master election
+└── keymaps/
+    └── default/
+        └── keymap.c       — base QWERTY + Fn layer
+```
