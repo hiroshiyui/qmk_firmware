@@ -85,8 +85,41 @@ Standard ANSI layout. Both Space bars send `KC_SPC`.
 | Fn + `←`      | Previous track      |
 | Fn + `↓`      | Mute                |
 | Fn + `→`      | Next track          |
-| Fn + `Esc`    | `QK_BOOT` (left half bootloader)  |
-| Fn + `Pause`  | `QK_BOOT` (right half bootloader) |
+| Fn + `Esc`    | `QK_BOOT` (left half bootloader) — requires unlock first  |
+| Fn + `Pause`  | `QK_BOOT` (right half bootloader) — requires unlock first |
+| Fn + `ScrLk`  | Relock immediately (`QK_SECURE_LOCK`)                     |
+
+## Security — Rewrite Protection
+
+The firmware uses **QMK Secure** to block `QK_BOOT` (and other sensitive keycodes) while the keyboard is in the locked state.  The keyboard starts locked on every power-on.
+
+### Unlock sequence
+
+Press the following keys **in order**, with no more than 3 s between each step:
+
+```
+Fn  →  B  →  O  →  T
+```
+
+(Matrix positions: `[11,2]` → `[4,5]` → `[8,3]` → `[2,5]`)
+
+> **Important:** change this to a personal sequence in `config.h` before your first flash — the default above is public.
+
+### Relock
+
+The keyboard relocks automatically after **60 s** of inactivity in the unlocked state.  To relock immediately, press **`Fn + ScrLk`**.
+
+### Threat model
+
+| Vector | Mitigation |
+|--------|-----------|
+| `Fn + Esc` / `Fn + Pause` keypress | Blocked by QMK Secure until unlocked |
+| Physical BOOTSEL button | Requires opening the case (hardware boundary) |
+| Bootmagic (hold top-left key on plug-in) | Requires physical replug — same boundary as BOOTSEL |
+
+QMK Secure protects against an attacker who has **momentary keyboard access** but cannot open the case.  It does not protect against someone who can disassemble the board.
+
+---
 
 ## Preliminary Verifications
 

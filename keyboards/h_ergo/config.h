@@ -12,6 +12,21 @@
 // Both Picos have USB ports, so this cleanly selects whichever is plugged in first.
 #define SPLIT_USB_DETECT
 
+// ─── Rewrite protection (QMK Secure) ─────────────────────────────────────────
+// QK_BOOT and other sensitive keycodes are blocked while the keyboard is in
+// the locked state (default on every power-on).  To unlock, press the sequence
+// below in order within SECURE_UNLOCK_TIMEOUT ms between each step:
+//
+//   Fn  [11,2]  →  B  [4,5]  →  O  [8,3]  →  T  [2,5]
+//
+// Change this to a personal sequence before the first flash.
+// To manually relock without waiting for the timeout, press Fn + ScrLk.
+#define SECURE_UNLOCK_SEQUENCE {{11, 2}, {4, 5}, {8, 3}, {2, 5}}
+// Maximum ms between consecutive steps of the unlock sequence (default 5000).
+#define SECURE_UNLOCK_TIMEOUT 3000
+// Auto-relock after 60 s of inactivity in the unlocked state (0 = never).
+#define SECURE_IDLE_TIMEOUT 60000
+
 // ─── Asymmetric matrix ────────────────────────────────────────────────────────
 // keyboard.json lists 10 col pins, which sets MATRIX_COLS=10 (needed for the
 // right half's 10-column layout).  The left half's hand-wired matrix only has

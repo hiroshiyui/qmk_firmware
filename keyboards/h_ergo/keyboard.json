@@ -15,7 +15,8 @@
         "bootmagic": true,
         "extrakey": true,
         "mousekey": false,
-        "nkro": true
+        "nkro": true,
+        "secure": true
     },
     "diode_direction": "COL2ROW",
     "matrix_pins": {

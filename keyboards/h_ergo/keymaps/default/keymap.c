@@ -2,7 +2,7 @@
 // Split TKL: 36-key left half + 51-key right half, Raspberry Pi Pico per side.
 //
 // Layer 0 — Base (QWERTY)
-// Layer 1 — Fn  (media, volume, navigation extras, firmware flash)
+// Layer 1 — Fn  (media, volume, navigation extras, firmware flash, secure lock)
 //
 // Key order matches the LAYOUT array in keyboard.json:
 //   Row 0: Esc … F6 | F7 … Ins          (17 keys)
@@ -64,7 +64,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      * All other keys     → transparent (pass through to Base)
      *
      * ,──────┬────┬────┬────┬────┬────┬────╥────┬────┬────┬────┬────┬────┬──────┬──────┬──────┬──────╮
-     * │ BOOT │    │    │    │    │    │    ║    │    │    │    │    │    │      │      │ BOOT │      │
+     * │ BOOT │    │    │    │    │    │    ║    │    │    │    │    │    │      │ LOCK │ BOOT │      │
      * ├──────┼────┴────┴────┴────┴────┴────╫────┴────┴────┴────┴────┴────┴──────┴──────┼──────┤
      * │      │                             ║                             │             │      │
      * ├──────┴┬────────────────────────────╫────────────────────────────┴─────────────┼──────┤
@@ -80,7 +80,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_FN] = LAYOUT(
         // Row 0
         QK_BOOT, _______, _______, _______, _______, _______, _______,
-        _______, _______, _______, _______, _______, _______, _______, _______, QK_BOOT, _______,
+        _______, _______, _______, _______, _______, _______, _______, QK_SECURE_LOCK, QK_BOOT, _______,
         // Row 1
         _______, _______, _______, _______, _______, _______, _______,
         _______, _______, _______, _______, KC_VOLD, KC_VOLU, _______, _______,
